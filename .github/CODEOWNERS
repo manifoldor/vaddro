@@ -1,0 +1,7 @@
+* @manifoldor
+
+/cuda/ @manifoldor
+/seed.py @manifoldor
+/combine.py @manifoldor
+/verify_result.py @manifoldor
+/.github/workflows/ @manifoldor

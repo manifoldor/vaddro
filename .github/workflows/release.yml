@@ -1,0 +1,63 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+jobs:
+  source-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout tagged source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5.4.0
+        with:
+          python-version: "3.12"
+
+      - name: Verify tag, tests, and source integrity
+        shell: bash
+        run: |
+          test "v$(tr -d '[:space:]' < VERSION)" = "$GITHUB_REF_NAME"
+          python seed.py --self-test
+          python combine.py --self-test
+          python verify_result.py --self-test
+          python -m unittest discover -s tests -v
+          bash tests/test_inverse_chain.sh
+          bash tests/test_split_variant_hash.sh
+          python scripts/verify_precomp.py
+          python scripts/scan_sensitive.py
+
+      - name: Build reproducible worker source archive
+        shell: bash
+        run: |
+          export SOURCE_DATE_EPOCH="$(git show -s --format=%ct)"
+          ./scripts/package_worker.sh
+
+      - name: Attest archive provenance
+        uses: actions/attest@a1948c3f048ba23858d222213b7c278aabede763 # v4.1.1
+        with:
+          subject-path: dist/vaddro-worker-linux-x86_64.tar.gz
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          args=(--verify-tag --generate-notes)
+          if [[ "$GITHUB_REF_NAME" == *-* ]]; then
+            args+=(--prerelease)
+          fi
+          gh release create "$GITHUB_REF_NAME" "${args[@]}" \
+            dist/vaddro-worker-linux-x86_64.tar.gz \
+            dist/SHA256SUMS

@@ -1,0 +1,38 @@
+name: GPU validation
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 3 * * 1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gpu-validation
+  cancel-in-progress: false
+
+jobs:
+  cuda-self-test:
+    # Keep private GPU runners off pull_request events: forked code is untrusted.
+    runs-on: [self-hosted, linux, x64, cuda, sm_120]
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          clean: true
+
+      - name: Verify source and build for RTX 5090
+        run: |
+          python3 scripts/verify_precomp.py
+          make -C cuda clean inv-ab-self-test ARCH=sm_120
+          make -C cuda clean split-ab-self-test ARCH=sm_120
+
+      - name: Run Compute Sanitizer on fixed-chain candidate
+        run: make -C cuda sanitizer ARCH=sm_120 INV_ADDITION_CHAIN=1
+
+      - name: Run Compute Sanitizer on split-hash candidate
+        run: make -C cuda sanitizer ARCH=sm_120 SPLIT_VARIANT_HASH=1
