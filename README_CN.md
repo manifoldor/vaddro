@@ -9,9 +9,17 @@
 
 [English](README.md) · [简体中文](README_CN.md)
 
-**Vaddro（Vanity Address Online）**使用原生 CUDA/PTX 搜索定制 EVM 地址。它采用 Split-Key 工作流：Seed 私有标量始终留在离线端，联网 GPU Worker 基于对应的 secp256k1 公钥点搜索并返回经过验证的加法 Search Share，最终私钥只在离线环境中合并和校验。
+**Vaddro（Vanity Address Online）**使用原生 CUDA/PTX 搜索 EVM 靓号。它采用 Split-Key 工作流：Seed 私有标量始终留在离线端，联网 GPU Worker 基于对应的 secp256k1 公钥点搜索并返回经过验证的加法 Search Share，最终私钥只在离线环境中合并和校验。
 
 > **RTX 5090 实测性能：5.20–5.26 GH/s** 六变体有效地址检查、**3.45 GH/s** 原始点生成，生产参数下工作显存约 **5.1 GiB**。
+
+## 为什么还要做一个靓号引擎
+
+归档版 Profanity（`johguse/profanity`）用 32 位 RNG 种子生成私钥（[CVE-2022-40769](https://nvd.nist.gov/vuln/detail/CVE-2022-40769)）。该缺陷于 2022 年 9 月披露后，Wintermute 的一个由该工具生成的管理员靓号 EOA 被恢复，损失约 1.6 亿美元；另有约 330 万美元从其他 Profanity 生成的 EOA 被转走。
+
+1inch 的 Profanity2 用 Split-Key 替换了这一设计：GPU 从公开的 secp256k1 点搜索，返回加法 Share，最终私钥在离线端合并。Vaddro 采用同一安全模型，以原生 CUDA/PTX（而非 OpenCL）实现，并加入多 Worker 分片和验证链。Seed 私有标量不会被复制到 GPU Worker。
+
+不要使用归档版 Profanity。不要把私钥交给任何 Worker 或靓号代工。Vaddro Worker 只需要 128 位十六进制公钥点。项目咖啡地址 `0x00000000000003eb5045a0868cdb96a9926e2328` 是 13 个前导十六进制零的工作量证明（`0x` 之后为 `0000000000000`，然后是 `3eb…`）。
 
 ## 为什么选择 Vaddro
 
@@ -271,7 +279,7 @@ python3 combine.py \
 
 ## Buy me a coffee
 
-如果 Vaddro 对你有帮助，可以通过以下 EVM 地址支持项目持续开发：
+如果 Vaddro 对你有帮助，可以通过以下 EVM 地址支持项目持续开发。该地址在 `0x` 之后有 **13** 个前导十六进制零（`0000000000000` 然后是 `3eb…`）：
 
 ~~~text
 0x00000000000003eb5045a0868cdb96a9926e2328

@@ -13,6 +13,14 @@
 
 > **RTX 5090 measured performance:** **5.20–5.26 GH/s** effective address checks, **3.45 GH/s** raw point generation, and approximately **5.1 GiB** working GPU memory with the production configuration.
 
+## Why another vanity engine
+
+Archived Profanity (`johguse/profanity`) seeded its generator from a 32-bit RNG value ([CVE-2022-40769](https://nvd.nist.gov/vuln/detail/CVE-2022-40769)). After that disclosure in September 2022, Wintermute lost about $160 million when an administrative vanity EOA created with the tool was recovered. About $3.3 million was also drained from other Profanity-generated EOAs.
+
+1inch Profanity2 replaced that design with Split-Key: the GPU searches from a public secp256k1 point, returns an additive share, and the final private key is combined offline. Vaddro uses the same safety model, implemented as native CUDA/PTX rather than OpenCL, with multi-worker sharding and a verification chain. The seed private scalar is never copied to a GPU worker.
+
+Do not use archived Profanity. Do not send a private key to any worker or vanity seller. A Vaddro worker only needs the 128-hex public point. The project coffee address `0x00000000000003eb5045a0868cdb96a9926e2328` is a 13-leading-zero-nibble proof of work (thirteen `0` hex digits after `0x`, then `3eb…`).
+
 ## Why Vaddro
 
 | Capability | Implementation | Practical benefit |
@@ -271,7 +279,7 @@ General contact: yishan ([linyishan@gmail.com](mailto:linyishan@gmail.com)). For
 
 ## Buy me a coffee
 
-If Vaddro is useful to you, you can support its continued development through this EVM address:
+If Vaddro is useful to you, you can support its continued development through this EVM address. It has **13** leading hex zero nibbles after `0x` (`0000000000000` then `3eb…`):
 
 ~~~text
 0x00000000000003eb5045a0868cdb96a9926e2328

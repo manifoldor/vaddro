@@ -24,7 +24,7 @@ combine.py
   -> final private key and independently verified EVM address
 ~~~
 
-Under the secp256k1 Elliptic Curve Discrete Logarithm assumption, the worker cannot recover the Seed private scalar from its public point. Split-Key does not protect a compromised offline machine, a leaked Seed or wallet, a malicious build, or an implementation flaw.
+Under the secp256k1 Elliptic Curve Discrete Logarithm assumption, the worker cannot recover the Seed private scalar from its public point. Split-Key does not protect a compromised offline machine, a leaked Seed or wallet, a malicious build, or an implementation flaw. This is the same Split-Key model that replaced archived Profanity after CVE-2022-40769 (32-bit RNG seed).
 
 CUDA startup self-tests, runtime canaries, host-side hit reconstruction, and `verify_result.py` detect computational errors. They do not replace release verification or independent offline validation.
 
