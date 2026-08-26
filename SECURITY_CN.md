@@ -24,7 +24,7 @@ combine.py
   -> 最终私钥与独立验证的 EVM 地址
 ~~~
 
-在 secp256k1 椭圆曲线离散对数安全假设成立时，Worker 无法从公钥点恢复 Seed 私有标量。Split-Key 不能保护已被入侵的离线机、泄露的 Seed 或钱包、恶意构建以及实现缺陷。
+在 secp256k1 椭圆曲线离散对数安全假设成立时，Worker 无法从公钥点恢复 Seed 私有标量。Split-Key 不能保护已被入侵的离线机、泄露的 Seed 或钱包、恶意构建以及实现缺陷。该模型与 CVE-2022-40769（归档版 Profanity 的 32 位 RNG 种子）披露后用于替代该工具的 Split-Key 方案同类。
 
 CUDA 启动自检、运行时 canary、Host 命中重建和 `verify_result.py` 用于发现计算错误，但不能替代发布包校验和离线独立验证。
 
